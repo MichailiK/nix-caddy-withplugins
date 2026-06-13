@@ -1,0 +1,110 @@
+# `caddy-plugin-fod`
+
+`caddy.withPlugins` without the hash invalidating every time Caddy gets updated.
+
+## Usage
+
+Using caddy-plugin-fod is nearly identical to nixpkgs' `caddy` package.
+
+```nix
+caddy.withPlugins {
+  plugins = [
+    # module[@version][=replacement[@version]] (same as `xcaddy --with` syntax)
+    "github.com/caddy-dns/cloudflare@v0.2.1"
+    "github.com/caddy-dns/route53@v1.5.0"
+    # require X, but fetch from a fork
+    "github.com/caddy-dns/cloudflare@v0.2.1=github.com/myfork/cloudflare@v0.2.2"
+  ];
+  hash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  # enabled by default, asserts each plugin is in the resulting binary
+  doInstallCheck = true;
+}
+```
+
+## Examples
+
+### Flakes
+
+```nix
+{
+  inputs.caddy-plugin-fod.url = "github:MichailiK/caddy-plugin-fod/nixos-unstable";
+
+  outputs = { self, nixpkgs, caddy-plugin-fod, ... }:
+    let
+      system = "x86_64-linux";
+      caddy = caddy-plugin-fod.packages.${system}.caddy;
+    in {
+      packages.${system}.myCaddy = caddy.withPlugins {
+        plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
+        hash = "sha256-EXZTsf9KrIAi9gHsBHrYQ7oIQiYmLj6sYuQP5QihPcA=";
+      };
+    };
+}
+```
+> [!IMPORTANT]
+>
+> Do not make this flake's nixpkgs follow yours. `caddy-plugin-fod` must
+> download Caddy's Go module (and dependencies) with a FOD using Go's toolkit.
+> Changes to either Caddy or Go's tooling can change the FOD output and
+> invalidate the FOD hash (stored in [./version.json](./version.json))
+
+### Non-flakes
+
+```nix
+let caddy-plugin-fod = import (fetchTarball "https://github.com/MichailiK/caddy-plugin-fod/archive/nixos-unstable.tar.gz");
+in caddy-plugin-fod.packages.x86_64-linux.caddy.withPlugins {
+  plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
+  hash = "sha256-EXZTsf9KrIAi9gHsBHrYQ7oIQiYmLj6sYuQP5QihPcA=";
+}
+```
+
+### Overlay
+
+Add `caddy-plugin-fod.overlays.default` to your `nixpkgs.overlays` configuration.
+`pkgs.caddy.withPlugins { ... }` will use the decoupled plugin hash.
+
+You should use the branch of `caddy-plugin-fod` that matches your nixpkgs
+channel (e.g. `github:MichailiK/caddy-plugin-fod/nixos-unstable`)
+
+## Finding your hash
+
+Similarly to nixpkgs' Caddy, you can obtain the correct hash by leaving the
+hash string empty or using `lib.fakeHash`. After the failed rebuild, insert
+the expected hash.
+
+## Implementation
+
+This repo effectively re-implements `xcaddy` in Nix.
+
+Additionally, Go modules get fetched in a somewhat unorthodox manner.
+We are using 2 fixed output derivations that create
+[`GOPROXY`](https://go.dev/ref/mod#goproxy-protocol)s:
+
+1. "Base" modules FOD: The Caddy module (and its dependencies) get fetched from
+   the network. The resulting `GOPROXY` cache will be outputted. The hash for
+   this FOD is provided by this repo.
+2. "Plugin" modules FOD: The Go cache of the previous FOD is used to fetch the
+   Caddy module again, then, your plugins get fetched from the network. The Go
+   cache gets compared to the previous cache, and any duplicates/delta will be
+   deleted. The resulting `GOPROXY` cache will be outputted.
+
+Effectively, this means that the second FOD only contains the Go
+modules/dependencies of your plugins, so the same set of plugins will
+result in the same FOD hash [**most of the time**](#caveat).
+
+Finally, both `GOPROXY` get combined into one, and Caddy gets built.
+
+## Caveat
+
+Under rare circumstances, due to Go's
+[Minimal Version Selection](https://go.dev/ref/mod#minimal-version-selection),
+the plugin modules FOD can unexpectedly change. This happens for
+dependencies that are shared with Caddy & your plugins.
+
+Example:
+
+- Caddy depends on `github.com/libdns/libdns@v0.2.1`.
+- One of your plugins (`caddy-dns/cloudflare`) needs `github.com/libdns/libdns@v0.2.2`.
+- Since the plugin pins libdns higher, **v0.2.2 is added to your plugin modules**.
+- Later, Caddy itself bumps to `libdns@v0.2.2`. Now Caddy already provides it,
+  so it **drops out of your plugin modules FOD**, thus changing the plugins hash.
