@@ -55,7 +55,11 @@ SYSTEM = system()
 
 
 def update_expr(suffix: str) -> str:
-    return f'(builtins.getFlake "path:{REPO}")._update.{SYSTEM}.{suffix}'
+    return (
+        f"(import {REPO}/update {{ "
+        f'pkgs = (builtins.getFlake "path:{REPO}").inputs.nixpkgs.legacyPackages.{SYSTEM}; '
+        f"}}).{suffix}"
+    )
 
 
 def latest_version() -> str:
@@ -68,7 +72,7 @@ def latest_version() -> str:
 
 
 def probe(attr: str, args: dict) -> str:
-    "Build `_update.probe(args).<attr>` with a fake hash and return the real one."
+    "Build `(./update).probe(args).<attr>` with a fake hash and return the real one."
 
     with tempfile.NamedTemporaryFile(
         "w", suffix=".json", prefix="caddy-update-", delete=False

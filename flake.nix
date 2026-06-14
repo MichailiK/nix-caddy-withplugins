@@ -53,9 +53,6 @@
 
       checks = forAllSystems ({ pkgs, ... }: import ./tests { inherit pkgs; });
 
-      # Consumed by ./update/update.py.
-      _update = forAllSystems ({ pkgs, ... }: import ./update { inherit pkgs; });
-
       devShells = forAllSystems (
         { pkgs, ... }:
         {

@@ -1,21 +1,21 @@
 # Maintaining
 
-Notes for maintaining of `nix-caddy-withplugins`.
+Notes for maintaining `nix-caddy-withplugins`.
 
 ## Updating Caddy
 
-This is automated daily by the [`update.yml`](.github/workflows/update.yml)
-Workflow, on the `nixos-unstable` branch and the latest `nixos-XX.YY`
-branch.
+Caddy updates are automated daily by the
+[`update.yml`](.github/workflows/update.yml) Workflow, on the `nixos-unstable`
+and the latest `nixos-XX.YY` branches.
 
-To update Caddy:
+To manually update Caddy:
 
 1. `nix flake update`
-2. Run `nix develop --command ./update/update.py` to recoumpute this repo's Caddy
+2. Run `nix develop --command ./update/update.py` to recompute this repo's Caddy
    version and FOD hashes.
 
 The update script will output `Update completed` if there was an update.
-Otherwise it will output `Up to date` if there is no update. 
+Otherwise it will output `Up to date` if there is no update.
 
 > If the update script reports that
 > `Update completed: caddy {version} unchanged, but FOD hashes have changed`,
@@ -27,10 +27,10 @@ Otherwise it will output `Up to date` if there is no update.
 
 Branches mirror nixpkgs' channels:
 
-- `nixos-unstable` — the default branch.
-- `nixos-XX.YY` — one per supported stable release
+- `nixos-unstable` - default branch
+- `nixos-XX.YY` - stable nixpkgs branch
 
-The primary difference between the brnaches is the nixpkgs input used in the flake:
+The primary difference between the branches is the nixpkgs input used in the flake:
 
 `flake.nix`
 ```nix
@@ -55,12 +55,14 @@ as well:
    ```nix
    inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-XX.YY";
    ```
+
 3. Follow [Updating Caddy](#updating-caddy)
   - `nix flake update`
   - `nix develop --command ./update/update.py`
 4. Push the new stable branch
 5. Update the [`update.yml`](.github/workflows/update.yml) workflow to
    change the `branch:` list, replacing the old stable branch with the new one:
+
    ```yaml
    branch:
      - nixos-unstable
