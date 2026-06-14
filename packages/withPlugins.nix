@@ -302,7 +302,7 @@ caddy.overrideAttrs (
       runHook postInstallCheck
     '';
 
-    # Expose the intermediate FODs so tooling (update/update.sh) can realise them in
+    # Expose the intermediate FODs so tooling (update/update.py) can realise them in
     # isolation to read back their fixed-output hashes, and so they are easy to
     # inspect when debugging the subtraction.
     passthru = (prevAttrs.passthru or { }) // {

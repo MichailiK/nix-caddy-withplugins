@@ -53,14 +53,15 @@
 
       checks = forAllSystems ({ pkgs, ... }: import ./tests { inherit pkgs; });
 
-      # Consumed by ./update/update.sh.
+      # Consumed by ./update/update.py.
       _update = forAllSystems ({ pkgs, ... }: import ./update { inherit pkgs; });
 
       devShells = forAllSystems (
         { pkgs, ... }:
         {
+          # dev shell for ./update/update.py
           default = pkgs.mkShellNoCC {
-            packages = [ pkgs.jq ];
+            packages = [ pkgs.python3 ];
           };
         }
       );

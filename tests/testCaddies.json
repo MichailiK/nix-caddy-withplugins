@@ -1,0 +1,12 @@
+{
+  "latest": {
+    "pluginSampleHash": "sha256-EXZTsf9KrIAi9gHsBHrYQ7oIQiYmLj6sYuQP5QihPcA="
+  },
+  "previous": {
+    "version": "2.11.3",
+    "srcHash": "sha256-7Hgmo7ldDtbwl/acEY/4RNhSGnK/NNcXn+eIm1I8HKg=",
+    "vendorHash": "sha256-QiZZxYsYFUneZ52TfFKQWJ42lmBofvUTZrHmDBuN2O4=",
+    "caddyVendorProxyHash": "sha256-PF43fepG16ay/dsX8ME36fzKx2uXq2vRqQnVEzJAhPk=",
+    "pluginSampleHash": "sha256-EXZTsf9KrIAi9gHsBHrYQ7oIQiYmLj6sYuQP5QihPcA="
+  }
+}

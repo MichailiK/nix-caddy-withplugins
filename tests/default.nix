@@ -8,18 +8,18 @@ let
   inherit (pkgs) lib;
 
   caddies = import ./caddies.nix { inherit pkgs; };
-  pluginHashes = builtins.fromJSON (builtins.readFile ./pluginSampleHashes.json);
+  fixtures = builtins.fromJSON (builtins.readFile ./testCaddies.json);
   sample = import ./pluginSample.nix;
 
   suffix = v: lib.replaceStrings [ "." ] [ "_" ] v;
 
   mkChecks =
-    caddy:
+    { caddy, pluginSampleHash }:
     let
       version = caddy.version;
       caddyWith = caddy.withPlugins {
         plugins = [ sample.spec ];
-        hash = pluginHashes.${version};
+        hash = pluginSampleHash;
       };
     in
     [
@@ -42,4 +42,15 @@ let
       }
     ];
 in
-lib.listToAttrs (lib.concatMap mkChecks caddies.all)
+lib.listToAttrs (
+  lib.concatMap mkChecks [
+    {
+      caddy = caddies.latest;
+      inherit (fixtures.latest) pluginSampleHash;
+    }
+    {
+      caddy = caddies.previous;
+      inherit (fixtures.previous) pluginSampleHash;
+    }
+  ]
+)

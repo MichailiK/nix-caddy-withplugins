@@ -2,26 +2,18 @@
 { pkgs }:
 let
   latest = import ../packages/caddy.nix { inherit pkgs; };
-  decouple = import ../packages/decouple.nix { inherit pkgs; };
-  prevVersion = builtins.fromJSON (builtins.readFile ./previousVersion.json);
+  mkPrevious = import ./previousCaddy.nix { inherit pkgs; };
+  fixtures = builtins.fromJSON (builtins.readFile ./testCaddies.json);
 
-  previous = decouple {
-    caddy = pkgs.caddy.overrideAttrs (_: {
-      inherit (prevVersion) version vendorHash;
-      src = pkgs.fetchFromGitHub {
-        owner = "caddyserver";
-        repo = "caddy";
-        tag = "v${prevVersion.version}";
-        hash = prevVersion.srcHash;
-      };
-    });
-    inherit (prevVersion) caddyVendorProxyHash;
+  previous = mkPrevious {
+    inherit (fixtures.previous)
+      version
+      srcHash
+      vendorHash
+      caddyVendorProxyHash
+      ;
   };
 in
 {
   inherit latest previous;
-  all = [
-    latest
-    previous
-  ];
 }

@@ -1,14 +1,17 @@
 { pkgs }:
 let
-  caddies = import ../tests/caddies.nix { inherit pkgs; };
+  inherit (pkgs.lib) fakeHash;
+
+  decouple = import ../packages/decouple.nix { inherit pkgs; };
+  mkPrevious = import ../tests/previousCaddy.nix { inherit pkgs; };
   sample = import ../tests/pluginSample.nix;
 
-  mkTestCaddy =
+  mkProbes =
     caddy:
     let
       withSample = caddy.withPlugins {
         plugins = [ sample.spec ];
-        hash = pkgs.lib.fakeHash;
+        hash = fakeHash;
       };
     in
     {
@@ -17,6 +20,26 @@ let
     };
 in
 {
-  latest = mkTestCaddy caddies.latest;
-  previous = mkTestCaddy caddies.previous;
+  latestVersion = pkgs.caddy.version;
+
+  probe =
+    {
+      prevVersion,
+      prevSrcHash ? fakeHash,
+      prevCaddyVendorProxyHash ? fakeHash,
+      latestCaddyVendorProxyHash ? fakeHash,
+    }:
+    {
+      latest = mkProbes (decouple {
+        caddy = pkgs.caddy;
+        caddyVendorProxyHash = latestCaddyVendorProxyHash;
+      });
+
+      previous = mkProbes (mkPrevious {
+        version = prevVersion;
+        srcHash = prevSrcHash;
+        vendorHash = fakeHash;
+        caddyVendorProxyHash = prevCaddyVendorProxyHash;
+      });
+    };
 }

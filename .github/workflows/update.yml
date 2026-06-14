@@ -32,12 +32,12 @@ jobs:
 
       - name: Run update script
         id: update
-        run: ./update/update.sh
+        run: nix develop --command ./update/update.py
 
       - name: Check for version changes
         id: changed
         run: |
-          if git diff --quiet -- version.json tests/previousVersion.json tests/pluginSampleHashes.json; then
+          if git diff --quiet -- version.json tests/testCaddies.json; then
             echo "meaningful=false" >> "$GITHUB_OUTPUT"
             git checkout -- flake.lock
             echo "No meaningful changes."
