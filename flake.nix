@@ -1,5 +1,5 @@
 {
-  description = "Custom Caddy builds whose plugin hash is independent of the Caddy version";
+  description = "`caddy.withPlugins` without the hash invalidating every time Caddy gets updated.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -60,7 +60,6 @@
         { pkgs, ... }:
         {
           default = pkgs.mkShellNoCC {
-            # scripts/update.sh drives everything through `nix` + `jq`.
             packages = [ pkgs.jq ];
           };
         }

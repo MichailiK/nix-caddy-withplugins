@@ -64,7 +64,7 @@ Add `nix-caddy-withplugins.overlays.default` to your `nixpkgs.overlays`
 configuration. `pkgs.caddy.withPlugins { ... }` will use the decoupled plugin hash.
 
 You should use the branch of `nix-caddy-withplugins` that matches your nixpkgs
-channel (e.g. `github:MichailiK/nix-caddy-withplugins/nixos-unstable`)
+channel (e.g. `nixos-unstable`)
 
 ## Finding your hash
 

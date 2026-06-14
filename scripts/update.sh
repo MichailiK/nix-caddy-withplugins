@@ -108,4 +108,4 @@ else
   emit plugin_hash_shift false
 fi
 
-note "Update successful."
+note "Update completed."

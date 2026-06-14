@@ -30,7 +30,7 @@ let
       {
         name = "pluginActive_${suffix version}";
         value = pkgs.runCommand "caddy-${version}-plugin-active" { } ''
-          echo "checking '${sample.moduleId}' is registered in caddy ${version}…"
+          echo "checking '${sample.moduleId}' is registered in caddy ${version}..."
           modules=$(${caddyWith}/bin/caddy list-modules)
           if ! grep -qF '${sample.moduleId}' <<<"$modules"; then
             echo "FAIL: '${sample.moduleId}' missing from 'caddy list-modules':" >&2
