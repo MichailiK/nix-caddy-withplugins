@@ -53,8 +53,8 @@
 
       checks = forAllSystems ({ pkgs, ... }: import ./tests { inherit pkgs; });
 
-      # Consumed by ./scripts/update.sh.
-      _update = forAllSystems ({ pkgs, ... }: import ./tests/packages.nix { inherit pkgs; });
+      # Consumed by ./update/update.sh.
+      _update = forAllSystems ({ pkgs, ... }: import ./update { inherit pkgs; });
 
       devShells = forAllSystems (
         { pkgs, ... }:

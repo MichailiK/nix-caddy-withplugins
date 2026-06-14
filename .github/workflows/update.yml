@@ -32,7 +32,7 @@ jobs:
 
       - name: Run update script
         id: update
-        run: ./scripts/update.sh
+        run: ./update/update.sh
 
       - name: Check for version changes
         id: changed

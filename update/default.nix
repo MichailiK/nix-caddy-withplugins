@@ -1,7 +1,7 @@
 { pkgs }:
 let
-  caddies = import ./caddies.nix { inherit pkgs; };
-  sample = import ./pluginSample.nix;
+  caddies = import ../tests/caddies.nix { inherit pkgs; };
+  sample = import ../tests/pluginSample.nix;
 
   mkTestCaddy =
     caddy:
