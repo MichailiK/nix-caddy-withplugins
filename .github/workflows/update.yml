@@ -1,0 +1,112 @@
+name: update
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: update-caddy
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  update:
+    name: nix flake update
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
+
+      - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+
+      - name: Update flake inputs
+        run: nix flake update
+
+      - name: Run update script
+        id: update
+        run: ./scripts/update.sh
+
+      - name: Check for version changes
+        id: changed
+        run: |
+          if git diff --quiet -- version.json tests/previous.json tests/pluginSampleHashes.json; then
+            echo "meaningful=false" >> "$GITHUB_OUTPUT"
+            git checkout -- flake.lock
+            echo "No meaningful changes."
+          else
+            echo "meaningful=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Assemble PR metadata
+        if: steps.changed.outputs.meaningful == 'true'
+        id: pr
+        run: |
+          mode='${STEPS_UPDATE_OUTPUTS_MODE}'
+          version='${STEPS_UPDATE_OUTPUTS_VERSION}'
+          previous='${STEPS_UPDATE_OUTPUTS_PREVIOUS}'
+          if [ "$mode" = "bump" ]; then
+            echo "branch=bump/caddy-$version" >> "$GITHUB_OUTPUT"
+            echo "title=caddy: $previous -> $version" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=refresh-inputs" >> "$GITHUB_OUTPUT"
+            echo "title=chore: bump nixpkgs, recompute hashes" >> "$GITHUB_OUTPUT"
+          fi
+          {
+            echo 'body<<EOF'
+            if [ "$mode" = "bump" ]; then
+              echo "Automatic update from Caddy $previous to **$version**."
+            else
+              echo "A \`flake.lock\` update has caused changes to FOD hashes,"
+              echo "which have been recomputed."
+            fi
+            if [ "${STEPS_UPDATE_OUTPUTS_PLUGIN_HASH_SHIFT}" = "true" ]; then
+              echo
+              echo "Note: The plugin hash changed in this bump."
+            fi
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+        env:
+          STEPS_UPDATE_OUTPUTS_MODE: ${{ steps.update.outputs.mode }}
+          STEPS_UPDATE_OUTPUTS_VERSION: ${{ steps.update.outputs.version }}
+          STEPS_UPDATE_OUTPUTS_PREVIOUS: ${{ steps.update.outputs.previous }}
+          STEPS_UPDATE_OUTPUTS_PLUGIN_HASH_SHIFT: ${{ steps.update.outputs.plugin_hash_shift }}
+
+      - name: Generate app token
+        if: steps.changed.outputs.meaningful == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        with:
+          app-id: ${{ vars.UPDATER_APP_ID }}
+          private-key: ${{ secrets.UPDATER_APP_KEY }}
+
+      - name: Resolve app identity
+        if: steps.changed.outputs.meaningful == 'true'
+        id: app-user
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          SLUG: ${{ steps.app-token.outputs.app-slug }}
+        run: |
+          id=$(gh api "/users/${SLUG}[bot]" --jq .id)
+          echo "committer=${SLUG}[bot] <${id}+${SLUG}[bot]@users.noreply.github.com>" >> "$GITHUB_OUTPUT"
+
+      - name: Open pull request
+        if: steps.changed.outputs.meaningful == 'true'
+        uses: peter-evans/create-pull-request@aa523f9db61947bd5e06efd77870ef065eae32cc
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          committer: ${{ steps.app-user.outputs.committer }}
+          author: ${{ steps.app-user.outputs.committer }}
+          branch: ${{ steps.pr.outputs.branch }}
+          title: ${{ steps.pr.outputs.title }}
+          body: ${{ steps.pr.outputs.body }}
+          commit-message: ${{ steps.pr.outputs.title }}
+          labels: ${{ steps.update.outputs.plugin_hash_shift == 'true' && 'caddy-update,plugin-hash-shift' || 'caddy-update' }}
+          delete-branch: true
