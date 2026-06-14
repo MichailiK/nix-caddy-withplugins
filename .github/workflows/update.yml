@@ -64,7 +64,7 @@ jobs:
           # Namespace the head branch by base so PRs against different
           # branches never collide on the same head.
           if [ "$mode" = "bump" ]; then
-            echo "branch=$base/bump/caddy-$version" >> "$GITHUB_OUTPUT"
+            echo "branch=$base/bump/caddy" >> "$GITHUB_OUTPUT"
             echo "title=[$base] caddy: $previous -> $version" >> "$GITHUB_OUTPUT"
           else
             echo "branch=$base/refresh-inputs" >> "$GITHUB_OUTPUT"
