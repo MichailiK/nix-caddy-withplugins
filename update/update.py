@@ -109,7 +109,8 @@ def write_json(path: Path, data: dict) -> None:
 def main() -> None:
     actual = latest_version()
     recorded = json.loads(VERSION_JSON.read_text())
-    prev_fixture = json.loads(TEST_CADDIES_JSON.read_text())["previous"]
+    old_test_caddies = json.loads(TEST_CADDIES_JSON.read_text())
+    prev_fixture = old_test_caddies["previous"]
     note(f"nixpkgs has caddy {actual}, version.json has caddy {recorded['version']}")
 
     if actual == recorded["version"]:
@@ -164,27 +165,37 @@ def main() -> None:
         prev_caddy_hash = f_prev_caddy.result()
         prev_plugin_hash = f_prev_plugin.result()
 
-    write_json(
-        VERSION_JSON,
-        {"version": actual, "caddyVendorProxyHash": latest_caddy_hash},
-    )
-    write_json(
-        TEST_CADDIES_JSON,
-        {
-            "latest": {"pluginSampleHash": latest_plugin_hash},
-            "previous": {
-                "version": prev_version,
-                "srcHash": prev_src,
-                "vendorHash": prev_vendor_hash,
-                "caddyVendorProxyHash": prev_caddy_hash,
-                "pluginSampleHash": prev_plugin_hash,
-            },
+    new_version_json = {"version": actual, "caddyVendorProxyHash": latest_caddy_hash}
+    new_test_caddies = {
+        "latest": {"pluginSampleHash": latest_plugin_hash},
+        "previous": {
+            "version": prev_version,
+            "srcHash": prev_src,
+            "vendorHash": prev_vendor_hash,
+            "caddyVendorProxyHash": prev_caddy_hash,
+            "pluginSampleHash": prev_plugin_hash,
         },
+    }
+
+    hashes_changed = (
+        new_version_json != recorded or new_test_caddies != old_test_caddies
     )
+    if mode == "bump":
+        status = "update"
+    elif hashes_changed:
+        status = "hash-refresh"
+    else:
+        status = "no-change"
+
+    if hashes_changed:
+        write_json(VERSION_JSON, new_version_json)
+        write_json(TEST_CADDIES_JSON, new_test_caddies)
 
     emit("mode", mode)
     emit("version", actual)
     emit("previous", prev_version)
+    emit("status", status)
+    emit("changed", "true" if status != "no-change" else "false")
 
     if latest_plugin_hash != prev_plugin_hash:
         note("NOTE: the sample plugin hash changed in this bump.")
@@ -194,7 +205,12 @@ def main() -> None:
     else:
         emit("plugin_hash_shift", "false")
 
-    note("Update completed.")
+    if status == "update":
+        note(f"Update completed: caddy {prev_version} -> {actual}")
+    elif status == "hash-refresh":
+        note(f"Update completed: caddy {actual} unchanged, but FOD hashes have changed")
+    else:
+        note(f"Up to date: caddy {actual} unchanged")
 
 
 if __name__ == "__main__":

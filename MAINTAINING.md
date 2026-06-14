@@ -14,13 +14,14 @@ To update Caddy:
 2. Run `nix develop --command ./update/update.py` to recoumpute this repo's Caddy
    version and FOD hashes.
 
-If `version.json` changed, that means a new Caddy update is available. A PR
-should be opened to bump Caddy.
+The update script will output `Update completed` if there was an update.
+Otherwise it will output `Up to date` if there is no update. 
 
-> If only the hashes inside `tests/testCaddies.json` changes, it means that,
-> while there is no update for Caddy, Go tooling has likely been updated
-> and (likely `go mod`) has produced different outputs. Such a change
-> should be PR'd as well.
+> If the update script reports that
+> `Update completed: caddy {version} unchanged, but FOD hashes have changed`,
+> it means that, while there is no update for Caddy, Go tooling has likely been
+> updated and that has caused (likely `go mod`) to produce different outputs.
+> Such a change should be PR'd as well.
 
 ## Branch model
 
