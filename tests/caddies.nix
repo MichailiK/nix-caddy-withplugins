@@ -3,7 +3,7 @@
 let
   latest = import ../packages/caddy.nix { inherit pkgs; };
   decouple = import ../packages/decouple.nix { inherit pkgs; };
-  prevVersion = builtins.fromJSON (builtins.readFile ./previous.json);
+  prevVersion = builtins.fromJSON (builtins.readFile ./previousVersion.json);
 
   previous = decouple {
     caddy = pkgs.caddy.overrideAttrs (_: {

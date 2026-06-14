@@ -64,28 +64,28 @@ if [[ $MODE == bump ]]; then
   # Temporarily use fake hashes
   jq_edit version.json --arg v "$ACTUAL" --arg f "$FAKE" \
     '{ version: $v, caddyVendorProxyHash: $f }'
-  jq_edit tests/previous.json --arg v "$RECORDED" --arg f "$FAKE" \
+  jq_edit tests/previousVersion.json --arg v "$RECORDED" --arg f "$FAKE" \
     '{ version: $v, srcHash: $f, vendorHash: $f, caddyVendorProxyHash: $f }'
 
   note "computing srcHash for the demoted release $RECORDED"
-  jq_edit tests/previous.json --arg h "$(update_fod previous.src)" '.srcHash = $h'
+  jq_edit tests/previousVersion.json --arg h "$(update_fod previous.src)" '.srcHash = $h'
 else # mode = refresh
   # Temporarily use fake hashes
   jq_edit version.json --arg f "$FAKE" '.caddyVendorProxyHash = $f'
-  jq_edit tests/previous.json --arg f "$FAKE" \
+  jq_edit tests/previousVersion.json --arg f "$FAKE" \
     '.vendorHash = $f | .caddyVendorProxyHash = $f'
 fi
 
-PREV=$(jq -r '.version' tests/previous.json)
+PREV=$(jq -r '.version' tests/previousVersion.json)
 
 note "computing previous $PREV vendorHash"
-jq_edit tests/previous.json --arg h "$(update_fod previous.goModules)" '.vendorHash = $h'
+jq_edit tests/previousVersion.json --arg h "$(update_fod previous.goModules)" '.vendorHash = $h'
 
 note "computing latest $ACTUAL vendorProxy hash"
 jq_edit version.json --arg h "$(update_fod latest.caddyProxy)" '.caddyVendorProxyHash = $h'
 
 note "computing previous $PREV vendorProxy hash"
-jq_edit tests/previous.json --arg h "$(update_fod previous.caddyProxy)" '.caddyVendorProxyHash = $h'
+jq_edit tests/previousVersion.json --arg h "$(update_fod previous.caddyProxy)" '.caddyVendorProxyHash = $h'
 
 note "computing sample plugin hashes"
 latestPluginHash=$(update_fod latest.pluginProxy)
