@@ -64,7 +64,7 @@ Add `nix-caddy-withplugins.overlays.default` to your `nixpkgs.overlays`
 configuration. `pkgs.caddy.withPlugins { ... }` will use the decoupled plugin hash.
 
 You should use the branch of `nix-caddy-withplugins` that matches your nixpkgs
-channel (e.g. `nixos-unstable`)
+channel (e.g. `nixos-unstable`, `nixos-26.05`)
 
 ## Finding your hash
 
@@ -90,7 +90,7 @@ We are using 2 fixed output derivations that create
 
 Effectively, this means that the second FOD only contains the Go
 modules/dependencies of your plugins, so the same set of plugins will
-result in the same FOD hash [**most of the time**](#caveat).
+result in the same FOD hash (most of the time, see Caveat section below).
 
 Finally, both `GOPROXY` get combined into one, and Caddy gets built.
 
