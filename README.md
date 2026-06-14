@@ -29,7 +29,7 @@ caddy.withPlugins {
 {
   inputs.nix-caddy-withplugins.url = "github:MichailiK/nix-caddy-withplugins/nixos-unstable";
 
-  outputs = { self, nixpkgs, caddy-plugins, ... }:
+  outputs = { self, nixpkgs, nix-caddy-withplugins, ... }:
     let
       system = "x86_64-linux";
       caddy = nix-caddy-withplugins.packages.${system}.caddy;
