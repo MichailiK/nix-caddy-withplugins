@@ -2,7 +2,8 @@ name: ci
 
 on:
   push:
-    branches: [nixos-unstable]
+    # Every nixpkgs-mirroring branch (nixos-unstable, nixos-26.05, ...).
+    branches: [nixos-*]
   pull_request:
   workflow_dispatch:
 

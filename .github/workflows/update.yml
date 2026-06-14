@@ -13,13 +13,21 @@ permissions: {}
 
 jobs:
   update:
-    name: nix flake update
+    name: nix flake update (${{ matrix.branch }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    strategy:
+      # One branch failing must not abort the others.
+      fail-fast: false
+      matrix:
+        branch:
+          - nixos-unstable
+          - nixos-26.05
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
+          ref: ${{ matrix.branch }}
           persist-credentials: false
 
       - uses: cachix/install-nix-action@8aa03977d8d733052d78f4e008a241fd1dbf36b3
@@ -49,15 +57,18 @@ jobs:
         if: steps.changed.outputs.meaningful == 'true'
         id: pr
         run: |
+          base='${BASE}'
           mode='${STEPS_UPDATE_OUTPUTS_MODE}'
           version='${STEPS_UPDATE_OUTPUTS_VERSION}'
           previous='${STEPS_UPDATE_OUTPUTS_PREVIOUS}'
+          # Namespace the head branch by base so PRs against different
+          # branches never collide on the same head.
           if [ "$mode" = "bump" ]; then
-            echo "branch=bump/caddy-$version" >> "$GITHUB_OUTPUT"
-            echo "title=caddy: $previous -> $version" >> "$GITHUB_OUTPUT"
+            echo "branch=$base/bump/caddy-$version" >> "$GITHUB_OUTPUT"
+            echo "title=[$base] caddy: $previous -> $version" >> "$GITHUB_OUTPUT"
           else
-            echo "branch=refresh-inputs" >> "$GITHUB_OUTPUT"
-            echo "title=chore: bump nixpkgs, recompute hashes" >> "$GITHUB_OUTPUT"
+            echo "branch=$base/refresh-inputs" >> "$GITHUB_OUTPUT"
+            echo "title=[$base] chore: bump nixpkgs, recompute hashes" >> "$GITHUB_OUTPUT"
           fi
           {
             echo 'body<<EOF'
@@ -74,6 +85,7 @@ jobs:
             echo EOF
           } >> "$GITHUB_OUTPUT"
         env:
+          BASE: ${{ matrix.branch }}
           STEPS_UPDATE_OUTPUTS_MODE: ${{ steps.update.outputs.mode }}
           STEPS_UPDATE_OUTPUTS_VERSION: ${{ steps.update.outputs.version }}
           STEPS_UPDATE_OUTPUTS_PREVIOUS: ${{ steps.update.outputs.previous }}
@@ -104,6 +116,7 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           committer: ${{ steps.app-user.outputs.committer }}
           author: ${{ steps.app-user.outputs.committer }}
+          base: ${{ matrix.branch }}
           branch: ${{ steps.pr.outputs.branch }}
           title: ${{ steps.pr.outputs.title }}
           body: ${{ steps.pr.outputs.body }}
