@@ -81,13 +81,13 @@ PREV=$(jq -r '.version' tests/previousVersion.json)
 note "computing previous $PREV vendorHash"
 jq_edit tests/previousVersion.json --arg h "$(update_fod previous.goModules)" '.vendorHash = $h'
 
-note "computing latest $ACTUAL vendorProxy hash"
+note "computing latest $ACTUAL vendorProxyHash"
 jq_edit version.json --arg h "$(update_fod latest.caddyProxy)" '.caddyVendorProxyHash = $h'
 
-note "computing previous $PREV vendorProxy hash"
+note "computing previous $PREV vendorProxyHash"
 jq_edit tests/previousVersion.json --arg h "$(update_fod previous.caddyProxy)" '.caddyVendorProxyHash = $h'
 
-note "computing sample plugin hashes"
+note "computing sample plugin proxy hashes"
 latestPluginHash=$(update_fod latest.pluginProxy)
 prevPluginHash=$(update_fod previous.pluginProxy)
 
