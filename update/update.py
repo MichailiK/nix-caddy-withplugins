@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Recompute this flake's FOD hashes for the Caddy the nixpkgs input now provides.
+"""
+Recompute this flake's FOD hashes for the Caddy the nixpkgs input now provides.
 
 Run this after a `nix flake update`. Two modes, picked automatically:
 
