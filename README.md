@@ -1,10 +1,10 @@
-# `caddy-plugin-fod`
+# `nix-caddy-withplugins`
 
 `caddy.withPlugins` without the hash invalidating every time Caddy gets updated.
 
 ## Usage
 
-Using caddy-plugin-fod is nearly identical to nixpkgs' `caddy` package.
+Using `nix-caddy-withplugins` is nearly identical to nixpkgs' `caddy` package.
 
 ```nix
 caddy.withPlugins {
@@ -27,12 +27,12 @@ caddy.withPlugins {
 
 ```nix
 {
-  inputs.caddy-plugin-fod.url = "github:MichailiK/caddy-plugin-fod/nixos-unstable";
+  inputs.nix-caddy-withplugins.url = "github:MichailiK/nix-caddy-withplugins/nixos-unstable";
 
-  outputs = { self, nixpkgs, caddy-plugin-fod, ... }:
+  outputs = { self, nixpkgs, caddy-plugins, ... }:
     let
       system = "x86_64-linux";
-      caddy = caddy-plugin-fod.packages.${system}.caddy;
+      caddy = nix-caddy-withplugins.packages.${system}.caddy;
     in {
       packages.${system}.myCaddy = caddy.withPlugins {
         plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
@@ -43,7 +43,7 @@ caddy.withPlugins {
 ```
 > [!IMPORTANT]
 >
-> Do not make this flake's nixpkgs follow yours. `caddy-plugin-fod` must
+> Do not make this flake's nixpkgs follow yours. `nix-caddy-withplugins` must
 > download Caddy's Go module (and dependencies) with a FOD using Go's toolkit.
 > Changes to either Caddy or Go's tooling can change the FOD output and
 > invalidate the FOD hash (stored in [./version.json](./version.json))
@@ -51,8 +51,8 @@ caddy.withPlugins {
 ### Non-flakes
 
 ```nix
-let caddy-plugin-fod = import (fetchTarball "https://github.com/MichailiK/caddy-plugin-fod/archive/nixos-unstable.tar.gz");
-in caddy-plugin-fod.packages.x86_64-linux.caddy.withPlugins {
+let nix-caddy-withplugins = import (fetchTarball "https://github.com/MichailiK/nix-caddy-withplugins/archive/nixos-unstable.tar.gz");
+in nix-caddy-withplugins.packages.x86_64-linux.caddy.withPlugins {
   plugins = [ "github.com/caddy-dns/cloudflare@v0.2.4" ];
   hash = "sha256-EXZTsf9KrIAi9gHsBHrYQ7oIQiYmLj6sYuQP5QihPcA=";
 }
@@ -60,11 +60,11 @@ in caddy-plugin-fod.packages.x86_64-linux.caddy.withPlugins {
 
 ### Overlay
 
-Add `caddy-plugin-fod.overlays.default` to your `nixpkgs.overlays` configuration.
-`pkgs.caddy.withPlugins { ... }` will use the decoupled plugin hash.
+Add `nix-caddy-withplugins.overlays.default` to your `nixpkgs.overlays`
+configuration. `pkgs.caddy.withPlugins { ... }` will use the decoupled plugin hash.
 
-You should use the branch of `caddy-plugin-fod` that matches your nixpkgs
-channel (e.g. `github:MichailiK/caddy-plugin-fod/nixos-unstable`)
+You should use the branch of `nix-caddy-withplugins` that matches your nixpkgs
+channel (e.g. `github:MichailiK/nix-caddy-withplugins/nixos-unstable`)
 
 ## Finding your hash
 
