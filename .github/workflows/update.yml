@@ -57,10 +57,10 @@ jobs:
         if: steps.changed.outputs.meaningful == 'true'
         id: pr
         run: |
-          base='${BASE}'
-          mode='${STEPS_UPDATE_OUTPUTS_MODE}'
-          version='${STEPS_UPDATE_OUTPUTS_VERSION}'
-          previous='${STEPS_UPDATE_OUTPUTS_PREVIOUS}'
+          base="$BASE"
+          mode="$STEPS_UPDATE_OUTPUTS_MODE"
+          version="$STEPS_UPDATE_OUTPUTS_VERSION"
+          previous="$STEPS_UPDATE_OUTPUTS_PREVIOUS"
           # Namespace the head branch by base so PRs against different
           # branches never collide on the same head.
           if [ "$mode" = "bump" ]; then
@@ -80,7 +80,7 @@ jobs:
             fi
             if [ "${STEPS_UPDATE_OUTPUTS_PLUGIN_HASH_SHIFT}" = "true" ]; then
               echo
-              echo "Note: The plugin hash changed in this bump."
+              echo "Note: The plugin hash changed in this update."
             fi
             echo EOF
           } >> "$GITHUB_OUTPUT"
