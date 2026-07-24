@@ -201,9 +201,15 @@ def main() -> None:
     emit("status", status)
     emit("changed", "true" if status != "no-change" else "false")
 
-    if latest_plugin_hash != prev_plugin_hash:
-        note("NOTE: the sample plugin hash changed in this bump.")
-        note(f"Prev: {prev_version} ({prev_plugin_hash})")
+    if mode == "bump":
+        old_plugin_version, old_plugin_hash = prev_version, prev_plugin_hash
+    else:
+        old_plugin_version = actual
+        old_plugin_hash = old_test_caddies["latest"]["pluginSampleHash"]
+
+    if latest_plugin_hash != old_plugin_hash:
+        note("NOTE: the sample plugin hash changed in this update.")
+        note(f"Prev: {old_plugin_version} ({old_plugin_hash})")
         note(f"New : {actual} ({latest_plugin_hash})")
         emit("plugin_hash_shift", "true")
     else:
