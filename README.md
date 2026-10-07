@@ -29,7 +29,7 @@ caddy.withPlugins {
 {
   inputs.nix-caddy-withplugins.url = "github:MichailiK/nix-caddy-withplugins/nixos-unstable";
 
-  outputs = { self, nixpkgs, nix-caddy-withplugins, ... }:
+  outputs = { self, nix-caddy-withplugins, ... }:
     let
       system = "x86_64-linux";
       caddy = nix-caddy-withplugins.packages.${system}.caddy;
@@ -68,9 +68,9 @@ channel (e.g. `nixos-unstable`, `nixos-26.05`)
 
 ## Finding your hash
 
-Similarly to nixpkgs' Caddy, you can obtain the correct hash by leaving the
-hash string empty or using `lib.fakeHash`. After the failed rebuild, insert
-the expected hash.
+Similarly to nixpkgs' Caddy, you can obtain the correct hash by omitting
+`hash` (or setting it to an empty string or `lib.fakeHash`). After the
+failed rebuild, insert the expected hash.
 
 ## Implementation
 
