@@ -47,7 +47,6 @@ jobs:
         run: |
           if git diff --quiet -- version.json tests/testCaddies.json; then
             echo "meaningful=false" >> "$GITHUB_OUTPUT"
-            git checkout -- flake.lock
             echo "No meaningful changes."
           else
             echo "meaningful=true" >> "$GITHUB_OUTPUT"
@@ -64,10 +63,10 @@ jobs:
           # Namespace the head branch by base so PRs against different
           # branches never collide on the same head.
           if [ "$mode" = "bump" ]; then
-            echo "branch=$base/bump/caddy" >> "$GITHUB_OUTPUT"
+            echo "branch=update/$base/bump-caddy" >> "$GITHUB_OUTPUT"
             echo "title=[$base] caddy: $previous -> $version" >> "$GITHUB_OUTPUT"
           else
-            echo "branch=$base/refresh-inputs" >> "$GITHUB_OUTPUT"
+            echo "branch=update/$base/refresh-inputs" >> "$GITHUB_OUTPUT"
             echo "title=[$base] chore: bump nixpkgs, recompute hashes" >> "$GITHUB_OUTPUT"
           fi
           {
