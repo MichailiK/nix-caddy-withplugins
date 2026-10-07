@@ -81,6 +81,8 @@ let
 
   # Modules must have names
   emptyModule = lib.filter (p: p.path == "") parsed;
+  # Replacements must have names
+  emptyReplacement = lib.filter (p: p.hasReplace && p.replPath == "") parsed;
   # Modules must have a version
   unpinned = lib.filter (p: !(if p.hasReplace then p.replHasVersion else p.hasVersion)) parsed;
 
@@ -250,6 +252,8 @@ in
 assert lib.assertMsg (
   emptyModule == [ ]
 ) "caddy.withPlugins: every plugin spec must name a module (\"github.com/owner/repo@v1.2.3\")";
+assert lib.assertMsg (emptyReplacement == [ ])
+  "caddy.withPlugins: every replacement must name a module (\"github.com/owner/repo@v1.2.3=github.com/fork/repo@v1.2.3\")";
 assert lib.assertMsg (unpinned == [ ])
   "caddy.withPlugins: every plugin needs an explicit version (\"github.com/owner/repo@v1.2.3\" or \"github.com/owner/repo=github.com/fork/repo@v1.2.3\")";
 
@@ -297,7 +301,10 @@ caddy.overrideAttrs (
           ''
       ) parsed}
 
-      [[ $rc -ne 0 ]] && { echo '(set `caddy.withPlugins { doInstallCheck = false; }` to ignore)' >&2; exit 1; }
+      if [[ $rc -ne 0 ]]; then
+        echo '(set `caddy.withPlugins { doInstallCheck = false; }` to ignore)' >&2
+        exit 1
+      fi
 
       runHook postInstallCheck
     '';
