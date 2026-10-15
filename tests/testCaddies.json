@@ -3,10 +3,10 @@
     "pluginSampleHash": "sha256-EXZTsf9KrIAi9gHsBHrYQ7oIQiYmLj6sYuQP5QihPcA="
   },
   "previous": {
-    "version": "2.11.3",
-    "srcHash": "sha256-7Hgmo7ldDtbwl/acEY/4RNhSGnK/NNcXn+eIm1I8HKg=",
-    "vendorHash": "sha256-QiZZxYsYFUneZ52TfFKQWJ42lmBofvUTZrHmDBuN2O4=",
-    "caddyVendorProxyHash": "sha256-PF43fepG16ay/dsX8ME36fzKx2uXq2vRqQnVEzJAhPk=",
+    "version": "2.11.4",
+    "srcHash": "sha256-wzk8KRZfDCbbjRlBwkoKAoMjOhV4xF3yuXUueqtl1xM=",
+    "vendorHash": "sha256-2GwSM7EKN9GwN6kte7CekpXIJ0vzHhhsnrs3TC6vTW4=",
+    "caddyVendorProxyHash": "sha256-NYvFrMHPoms5ssdTGH3VU7nP8zcFDMG/qy3khsIwUr4=",
     "pluginSampleHash": "sha256-EXZTsf9KrIAi9gHsBHrYQ7oIQiYmLj6sYuQP5QihPcA="
   }
 }
