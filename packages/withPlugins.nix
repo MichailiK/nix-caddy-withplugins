@@ -264,6 +264,12 @@ caddy.overrideAttrs (
     proxyVendor = false;
     subPackages = [ "." ];
 
+    postConfigure = ''
+      pushd vendor/${caddyModule}
+      ${prevAttrs.postConfigure or ""}
+      popd
+    '';
+
     inherit doInstallCheck;
 
     installCheckPhase = ''
